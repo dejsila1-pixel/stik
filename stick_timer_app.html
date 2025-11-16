@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stick Control</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f0f0f;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .timer {
+      font-size: 48px;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 12px;
+      background: #1e88e5;
+      color: white;
+      cursor: pointer;
+      margin: 10px;
+    }
+
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+    }
+
+    .reset {
+      background: #d32f2f;
+    }
+  </style>
+</head>
+<body>
+  <h1>Контроль стиков</h1>
+
+  <!-- Большой таймер -->
+  <div id="countdown" class="timer">00:00</div>
+
+  <button id="useStick">Выплюнуть стик</button>
+  <button class="reset" id="resetTimer">Сброс</button>
+
+  <script>
+    let interval = null;
+    let cooldown = 35 * 60; // 35 минут в секундах — можно менять
+    let remaining = 0;
+
+    function updateDisplay() {
+      const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+      const s = String(remaining % 60).padStart(2, '0');
+      document.getElementById('countdown').textContent = `${m}:${s}`;
+    }
+
+    function startTimer() {
+      remaining = cooldown;
+      updateDisplay();
+
+      if (interval) clearInterval(interval);
+
+      interval = setInterval(() => {
+        if (remaining > 0) {
+          remaining--;
+          updateDisplay();
+        } else {
+          clearInterval(interval);
+          interval = null;
+          document.getElementById('useStick').disabled = false;
+          document.getElementById('countdown').textContent = 'МОЖНО';
+        }
+      }, 1000);
+    }
+
+    document.getElementById('useStick').addEventListener('click', () => {
+      document.getElementById('useStick').disabled = true;
+      startTimer();
+    });
+
+    document.getElementById('resetTimer').addEventListener('click', () => {
+      if (interval) clearInterval(interval);
+      remaining = 0;
+      updateDisplay();
+      document.getElementById('countdown').textContent = '00:00';
+      document.getElementById('useStick').disabled = false;
+    });
+
+    updateDisplay();
+  </script>
+</body>
+</html>
