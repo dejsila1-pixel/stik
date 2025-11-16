@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Стик-Контроль</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Стик-Контроль</h1>
+
+<div class="block">
+    <label>Интервал между стиками (мин):</label>
+    <input id="interval" type="number" value="60">
+</div>
+
+<div class="block">
+    <label>Максимум стиков за день:</label>
+    <input id="dailyLimit" type="number" value="20">
+</div>
+
+<div class="block">
+    <button id="enableNotifications">Включить уведомления</button>
+</div>
+
+<div class="block">
+    <button id="smokedButton">Я выкурил стик</button>
+</div>
+
+<div class="block">
+    <h2>Следующий стик через:</h2>
+    <div id="timer">--:--</div>
+</div>
+
+<div class="block">
+    <h2>Сегодня выкурено:</h2>
+    <div id="count">0</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
