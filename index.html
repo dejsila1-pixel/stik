@@ -1,43 +1,77 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Стик-Контроль</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Счетчик стиков</title>
+<style>
+  body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+  button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+  #timer { font-size: 24px; margin: 20px; }
+  #count { font-size: 20px; margin: 10px; }
+</style>
 </head>
 <body>
+<h1>Счетчик стиков</h1>
+<div id="count">Выкурено: 0</div>
+<div id="timer">Следующий стик через: 00:00</div>
+<button id="smokeBtn">Покурил</button>
+<button id="resetBtn">Сбросить</button>
 
-<h1>Стик-Контроль</h1>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Получаем данные из localStorage
+    let smokeCount = parseInt(localStorage.getItem('smokeCount')) || 0;
+    let timerEnd = parseInt(localStorage.getItem('timerEnd')) || null;
 
-<div class="block">
-    <label>Интервал между стиками (мин):</label>
-    <input id="interval" type="number" value="60">
-</div>
+    const countEl = document.getElementById('count');
+    const timerEl = document.getElementById('timer');
+    const smokeBtn = document.getElementById('smokeBtn');
+    const resetBtn = document.getElementById('resetBtn');
 
-<div class="block">
-    <label>Максимум стиков за день:</label>
-    <input id="dailyLimit" type="number" value="20">
-</div>
+    function updateCount() {
+        countEl.textContent = 'Выкурено: ' + smokeCount;
+    }
 
-<div class="block">
-    <button id="enableNotifications">Включить уведомления</button>
-</div>
+    function startTimer() {
+        const now = Date.now();
+        timerEnd = now + 15 * 60 * 1000; // 15 минут
+        localStorage.setItem('timerEnd', timerEnd);
+    }
 
-<div class="block">
-    <button id="smokedButton">Я выкурил стик</button>
-</div>
+    function updateTimer() {
+        if (!timerEnd) {
+            timerEl.textContent = 'Следующий стик через: 00:00';
+            return;
+        }
+        const now = Date.now();
+        let diff = timerEnd - now;
+        if (diff < 0) diff = 0;
+        const minutes = Math.floor(diff / 60000).toString().padStart(2, '0');
+        const seconds = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        timerEl.textContent = 'Следующий стик через: ' + minutes + ':' + seconds;
+    }
 
-<div class="block">
-    <h2>Следующий стик через:</h2>
-    <div id="timer">--:--</div>
-</div>
+    smokeBtn.addEventListener('click', () => {
+        smokeCount++;
+        localStorage.setItem('smokeCount', smokeCount);
+        updateCount();
+        startTimer();
+    });
 
-<div class="block">
-    <h2>Сегодня выкурено:</h2>
-    <div id="count">0</div>
-</div>
+    resetBtn.addEventListener('click', () => {
+        smokeCount = 0;
+        timerEnd = null;
+        localStorage.removeItem('smokeCount');
+        localStorage.removeItem('timerEnd');
+        updateCount();
+        updateTimer();
+    });
 
-<script src="script.js"></script>
+    updateCount();
+    updateTimer();
+    setInterval(updateTimer, 1000);
+});
+</script>
 </body>
 </html>
