@@ -6,7 +6,8 @@
 <title>Счетчик стиков</title>
 <style>
   body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
-  button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+  button { padding: 10px 20px; margin: 10px; font-size: 16px; cursor: pointer; }
+  input { padding: 5px; width: 60px; font-size: 16px; }
   #timer { font-size: 24px; margin: 20px; }
   #count { font-size: 20px; margin: 10px; }
 </style>
@@ -14,13 +15,15 @@
 <body>
 <h1>Счетчик стиков</h1>
 <div id="count">Выкурено: 0</div>
+<div>
+  Интервал между стиками (минут): <input type="number" id="intervalInput" min="1" value="15">
+</div>
 <div id="timer">Следующий стик через: 00:00</div>
 <button id="smokeBtn">Покурил</button>
 <button id="resetBtn">Сбросить</button>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // Получаем данные из localStorage
     let smokeCount = parseInt(localStorage.getItem('smokeCount')) || 0;
     let timerEnd = parseInt(localStorage.getItem('timerEnd')) || null;
 
@@ -28,14 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const timerEl = document.getElementById('timer');
     const smokeBtn = document.getElementById('smokeBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const intervalInput = document.getElementById('intervalInput');
 
     function updateCount() {
         countEl.textContent = 'Выкурено: ' + smokeCount;
     }
 
-    function startTimer() {
-        const now = Date.now();
-        timerEnd = now + 15 * 60 * 1000; // 15 минут
+    function startTimer(minutes) {
+        timerEnd = Date.now() + minutes * 60 * 1000;
         localStorage.setItem('timerEnd', timerEnd);
     }
 
@@ -44,11 +47,16 @@ document.addEventListener('DOMContentLoaded', () => {
             timerEl.textContent = 'Следующий стик через: 00:00';
             return;
         }
-        const now = Date.now();
-        let diff = timerEnd - now;
-        if (diff < 0) diff = 0;
-        const minutes = Math.floor(diff / 60000).toString().padStart(2, '0');
-        const seconds = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
+        let diff = timerEnd - Date.now();
+        if (diff <= 0) {
+            timerEl.textContent = 'Пора курить!';
+            if (Notification.permission === "granted") {
+                new Notification("Стик готов! Пора курить!");
+            }
+            return;
+        }
+        const minutes = Math.floor(diff / 60000).toString().padStart(2,'0');
+        const seconds = Math.floor((diff % 60000)/1000).toString().padStart(2,'0');
         timerEl.textContent = 'Следующий стик через: ' + minutes + ':' + seconds;
     }
 
@@ -56,7 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
         smokeCount++;
         localStorage.setItem('smokeCount', smokeCount);
         updateCount();
-        startTimer();
+
+        let interval = parseInt(intervalInput.value) || 15;
+        if(interval < 1) interval = 1;
+        startTimer(interval);
     });
 
     resetBtn.addEventListener('click', () => {
@@ -67,6 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
         updateCount();
         updateTimer();
     });
+
+    // Запрашиваем разрешение на уведомления
+    if ("Notification" in window && Notification.permission !== "granted") {
+        Notification.requestPermission();
+    }
 
     updateCount();
     updateTimer();
